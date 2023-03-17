@@ -162,7 +162,11 @@ class NeedimportDirective(Directive):
 
         # tags update
         for need in needs_list.values():
-            need["tags"] = need["tags"] + tags
+            if need["tags"]:
+                need["tags"] = need["tags"] + ",".join(tags)
+
+            else:
+                need["tags"] = tags
 
         need_nodes = []
         for need in needs_list.values():
