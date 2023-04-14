@@ -162,7 +162,7 @@ class NeedimportDirective(Directive):
 
         # tags update
         for need in needs_list.values():
-            if need["tags"]:
+            if "tags" in need.keys():
                 need["tags"] = need["tags"] + ",".join(tags)
 
             else:
