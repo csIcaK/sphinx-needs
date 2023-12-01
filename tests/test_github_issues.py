@@ -5,7 +5,11 @@ from subprocess import STDOUT, check_output
 import pytest
 
 
-@pytest.mark.parametrize("test_app", [{"buildername": "html", "srcdir": "doc_test/doc_github_issue_44"}], indirect=True)
+@pytest.mark.parametrize(
+    "test_app",
+    [{"buildername": "html", "srcdir": "doc_test/doc_github_issue_44"}],
+    indirect=True,
+)
 def test_doc_github_44(test_app):
     """
     https://github.com/useblocks/sphinxcontrib-needs/issues/44
@@ -18,7 +22,9 @@ def test_doc_github_44(test_app):
 
     output = str(
         check_output(
-            ["sphinx-build", "-a", "-E", "-b", "html", app.srcdir, app.outdir], stderr=STDOUT, universal_newlines=True
+            ["sphinx-build", "-a", "-E", "-b", "html", app.srcdir, app.outdir],
+            stderr=STDOUT,
+            universal_newlines=True,
         )
     )
     # app.build() Uncomment, if build should stop on breakpoints
@@ -32,7 +38,11 @@ def test_doc_github_44(test_app):
     assert "outgoing linked need test_123_broken not found" in output
 
 
-@pytest.mark.parametrize("test_app", [{"buildername": "html", "srcdir": "doc_test/doc_github_issue_61"}], indirect=True)
+@pytest.mark.parametrize(
+    "test_app",
+    [{"buildername": "html", "srcdir": "doc_test/doc_github_issue_61"}],
+    indirect=True,
+)
 def test_doc_github_61(test_app):
     """
     Test for https://github.com/useblocks/sphinxcontrib-needs/issues/61
@@ -56,7 +66,9 @@ def test_doc_github_61(test_app):
 
 
 @pytest.mark.parametrize(
-    "test_app", [{"buildername": "html", "srcdir": "doc_test/doc_github_issue_160"}], indirect=True
+    "test_app",
+    [{"buildername": "html", "srcdir": "doc_test/doc_github_issue_160"}],
+    indirect=True,
 )
 def test_doc_github_160(test_app):
     app = test_app

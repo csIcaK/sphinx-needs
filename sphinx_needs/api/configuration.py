@@ -34,7 +34,12 @@ def get_need_types(app: Sphinx) -> List[str]:
 
 
 def add_need_type(
-    app: Sphinx, directive: str, title: str, prefix: str, color: str = "#ffffff", style: str = "node"
+    app: Sphinx,
+    directive: str,
+    title: str,
+    prefix: str,
+    color: str = "#ffffff",
+    style: str = "node",
 ) -> None:
     """
     Adds a new need_type to the configuration.
@@ -65,7 +70,15 @@ def add_need_type(
     if directive in type_names:
         raise NeedsApiConfigException(f"{directive} already exists as need type")
 
-    needs_types.append({"directive": directive, "title": title, "prefix": prefix, "color": color, "style": style})
+    needs_types.append(
+        {
+            "directive": directive,
+            "title": title,
+            "prefix": prefix,
+            "color": color,
+            "style": style,
+        }
+    )
     app.add_directive(directive, sphinx_needs.directives.need.NeedDirective)
 
 
@@ -90,7 +103,9 @@ def add_extra_option(app: Sphinx, name: str) -> None:
     NEEDS_CONFIG.extra_options[name] = directives.unchanged
 
 
-def add_dynamic_function(app: Sphinx, function: DynamicFunction, name: Optional[str] = None) -> None:
+def add_dynamic_function(
+    app: Sphinx, function: DynamicFunction, name: Optional[str] = None
+) -> None:
     """
     Registers a new dynamic function for sphinx-needs.
 
@@ -122,7 +137,10 @@ WarningCheck = Callable[[NeedsInfoType, SphinxLoggerAdapter], bool]
 
 
 def add_warning(
-    app: Sphinx, name: str, function: Optional[WarningCheck] = None, filter_string: Optional[str] = None
+    app: Sphinx,
+    name: str,
+    function: Optional[WarningCheck] = None,
+    filter_string: Optional[str] = None,
 ) -> None:
     """
     Registers a warning.
@@ -136,11 +154,14 @@ def add_warning(
     :return: None
     """
     if function is None and filter_string is None:
-        raise NeedsApiConfigException("Function or filter_string must be given for add_warning_func")
+        raise NeedsApiConfigException(
+            "Function or filter_string must be given for add_warning_func"
+        )
 
     if function is not None and filter_string is not None:
         raise NeedsApiConfigException(
-            "For add_warning_func only function or filter_string is allowed to be set, " "not both."
+            "For add_warning_func only function or filter_string is allowed to be set, "
+            "not both."
         )
 
     warning_check = function or filter_string

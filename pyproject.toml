@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools", "poetry_core>=1.0.8"]  # setuptools for deps like plantuml
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
 name = "sphinx-needs"
 
@@ -101,11 +105,19 @@ markers = [
     "jstest: marks tests as JavaScript test (deselect with '-m \"not jstest\"')",
 ]
 
-[tool.black]
-line-length = 120
-
-[tool.isort]
-profile = "black"
+[tool.ruff]
+extend-select = [
+  "B",   # flake8-bugbear  
+  "C4",  # flake8-comprehensions
+  "I",   # isort
+  "ICN", # flake8-import-conventions
+  "ISC", # flake8-implicit-str-concat
+  "N",   # pep8-naming
+  "RUF", # Ruff-specific rules
+  "SIM", # flake8-simplify
+  "UP",  # pyupgrade
+]
+extend-ignore = ["B904", "ISC001", "N818", "RUF012"]
 
 [tool.mypy]
 files = "sphinx_needs"
@@ -150,9 +162,3 @@ module = [
   "sphinx_needs.data"
 ]
 disable_error_code = ["attr-defined", "no-any-return"]
-
-
-[build-system]
-requires = ["setuptools", "poetry_core>=1.0.8"]  # setuptools for deps like plantuml
-build-backend = "poetry.core.masonry.api"
-

@@ -2,7 +2,7 @@ import os
 import textwrap
 import time
 from contextlib import suppress
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 
 import requests
@@ -23,9 +23,13 @@ from sphinx_needs.services.config.github import (
 
 
 class GithubService(BaseService):
-    options = CONFIG_OPTIONS + EXTRA_DATA_OPTIONS + EXTRA_LINK_OPTIONS + EXTRA_IMAGE_OPTIONS
+    options = (
+        CONFIG_OPTIONS + EXTRA_DATA_OPTIONS + EXTRA_LINK_OPTIONS + EXTRA_IMAGE_OPTIONS
+    )
 
-    def __init__(self, app: Sphinx, name: str, config: Dict[str, Any], **kwargs: Any) -> None:
+    def __init__(
+        self, app: Sphinx, name: str, config: Dict[str, Any], **kwargs: Any
+    ) -> None:
         self.app = app
         self.name = name
         self.config = config
@@ -40,15 +44,19 @@ class GithubService(BaseService):
         self.download_avatars = self.config.get("download_avatars", True)
         self.download_folder = self.config.get("download_folder", "github_images")
 
-        self.username = self.config.get("username")
-        self.token = self.config.get("token")
+        self.username: str = self.config.get("username")  # type: ignore[assignment]
+        self.token: str = self.config.get("token")  # type: ignore[assignment]
 
         layouts = NeedsSphinxConfig(self.app.config).layouts
         if "github" not in layouts:
             layouts["github"] = GITHUB_LAYOUT
 
         self.gh_type_config = {
-            "issue": {"url": "search/issues", "query": "is:issue", "need_type": "issue"},
+            "issue": {
+                "url": "search/issues",
+                "query": "is:issue",
+                "need_type": "issue",
+            },
             "pr": {"url": "search/issues", "query": "is:pr", "need_type": "pr"},
             "commit": {"url": "search/commits", "query": "", "need_type": "commit"},
         }
@@ -64,17 +72,23 @@ class GithubService(BaseService):
         if "gh_type" in kwargs:
             self.gh_type = kwargs["gh_type"]
 
-        if self.gh_type not in self.gh_type_config.keys():
+        if self.gh_type not in self.gh_type_config:
             raise KeyError(
-                'github type "{}" not supported. Use: {}'.format(self.gh_type, ", ".join(self.gh_type_config.keys()))
+                'github type "{}" not supported. Use: {}'.format(
+                    self.gh_type, ", ".join(self.gh_type_config.keys())
+                )
             )
 
         # Set need_type to use by default
-        self.need_type = self.config.get("need_type", self.gh_type_config[self.gh_type]["need_type"])
+        self.need_type = self.config.get(
+            "need_type", self.gh_type_config[self.gh_type]["need_type"]
+        )
 
         super().__init__()
 
-    def _send(self, query: str, options: Dict[str, Any], specific: bool = False) -> Dict[str, Any]:
+    def _send(
+        self, query: str, options: Dict[str, Any], specific: bool = False
+    ) -> Dict[str, Any]:
         headers = {}
         if self.gh_type == "commit":
             headers["Accept"] = "application/vnd.github.cloak-preview+json"
@@ -91,26 +105,24 @@ class GithubService(BaseService):
                     single_type = "pulls"
                 else:
                     single_type = "commits"
-                url = self.url + "repos/{owner}/{repo}/{single_type}/{number}".format(
-                    owner=owner, repo=repo, single_type=single_type, number=number
-                )
+                url = self.url + f"repos/{owner}/{repo}/{single_type}/{number}"
             except IndexError:
-                raise NeedGithubServiceException('Single option ot valid, must follow "owner/repo/number"')
+                raise NeedGithubServiceException(
+                    'Single option ot valid, must follow "owner/repo/number"'
+                )
 
             params = {}
         else:
             url = self.url + self.gh_type_config[self.gh_type]["url"]
             query = "{} {}".format(query, self.gh_type_config[self.gh_type]["query"])
-            params = {"q": query, "per_page": options.get("max_amount", self.max_amount)}
+            params = {
+                "q": query,
+                "per_page": options.get("max_amount", self.max_amount),
+            }
 
         self.log.info(f"Service {self.name} requesting data for query: {query}")
 
-        auth: Optional[Tuple[str, str]]
-        if self.username:
-            # TODO token can be None
-            auth = (self.username, self.token)  # type: ignore
-        else:
-            auth = None
+        auth = (self.username, self.token) if self.username else None
 
         resp = requests.get(url, params=params, auth=auth, headers=headers)
 
@@ -120,26 +132,30 @@ class GithubService(BaseService):
             if "rate limit" in resp.json()["message"]:
                 resp_limit = requests.get(self.url + "rate_limit", auth=auth)
                 extra_info = resp_limit.json()
-                self.log.info("GitHub: API rate limit exceeded. We need to wait 60 secs...")
+                self.log.info(
+                    "GitHub: API rate limit exceeded. We need to wait 60 secs..."
+                )
                 self.log.info(extra_info)
                 time.sleep(61)
                 resp = requests.get(url, params=params, auth=auth, headers=headers)
                 if resp.status_code > 299:
                     if "rate limit" in resp.json()["message"]:
-                        raise NeedGithubServiceException("GitHub: API rate limit exceeded (twice). Stop here.")
+                        raise NeedGithubServiceException(
+                            "GitHub: API rate limit exceeded (twice). Stop here."
+                        )
                     else:
                         raise NeedGithubServiceException(
                             "Github service error during request.\n"
-                            "Status code: {}\n"
-                            "Error: {}\n"
-                            "{}".format(resp.status_code, resp.text, extra_info)
+                            f"Status code: {resp.status_code}\n"
+                            f"Error: {resp.text}\n"
+                            f"{extra_info}"
                         )
             else:
                 raise NeedGithubServiceException(
                     "Github service error during request.\n"
-                    "Status code: {}\n"
-                    "Error: {}\n"
-                    "{}".format(resp.status_code, resp.text, extra_info)
+                    f"Status code: {resp.status_code}\n"
+                    f"Error: {resp.text}\n"
+                    f"{extra_info}"
                 )
 
         if specific:
@@ -152,9 +168,13 @@ class GithubService(BaseService):
         self.log.debug(f"Requesting data for service {self.name}")
 
         if "query" not in options and "specific" not in options:
-            raise NeedGithubServiceException('"query" or "specific" missing as option for github service.')
+            raise NeedGithubServiceException(
+                '"query" or "specific" missing as option for github service.'
+            )
         elif "query" in options and "specific" in options:
-            raise NeedGithubServiceException('Only "query" or "specific" allowed for github service. Not both!')
+            raise NeedGithubServiceException(
+                'Only "query" or "specific" allowed for github service. Not both!'
+            )
         elif "query" in options:
             query = options["query"]
             specific = False
@@ -166,7 +186,9 @@ class GithubService(BaseService):
         if "items" not in response:
             if "errors" in response:
                 raise NeedGithubServiceException(
-                    "GitHub service query error: {}\n" "Used query: {}".format(response["errors"][0]["message"], query)
+                    "GitHub service query error: {}\n" "Used query: {}".format(
+                        response["errors"][0]["message"], query
+                    )
                 )
             else:
                 raise NeedGithubServiceException("Github service: Unknown error.")
@@ -180,7 +202,9 @@ class GithubService(BaseService):
 
         return data
 
-    def prepare_issue_data(self, items: List[Dict[str, Any]], options: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def prepare_issue_data(
+        self, items: List[Dict[str, Any]], options: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
         data = []
         for item in items:
             # ensure that "None" can not reach .splitlines()
@@ -189,7 +213,11 @@ class GithubService(BaseService):
 
             # wraps content lines, if they are too long. Respects already existing newlines.
             content_lines = [
-                "\n   ".join(textwrap.wrap(line, 60, break_long_words=True, replace_whitespace=False))
+                "\n   ".join(
+                    textwrap.wrap(
+                        line, 60, break_long_words=True, replace_whitespace=False
+                    )
+                )
                 for line in item["body"].splitlines()  # type: ignore
                 if line.strip()
             ]
@@ -197,7 +225,9 @@ class GithubService(BaseService):
             content = "\n\n   ".join(content_lines)
             # Reduce content length, if requested by config
             if self.max_content_lines > 0:
-                max_lines = int(options.get("max_content_lines", self.max_content_lines))
+                max_lines = int(
+                    options.get("max_content_lines", self.max_content_lines)
+                )
                 content_lines = content.splitlines()
                 if len(content_lines) > max_lines:
                     content_lines = content_lines[0:max_lines]
@@ -240,7 +270,9 @@ class GithubService(BaseService):
 
         return data
 
-    def prepare_commit_data(self, items: List[Dict[str, Any]], options: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def prepare_commit_data(
+        self, items: List[Dict[str, Any]], options: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
         data = []
 
         for item in items:
@@ -251,7 +283,9 @@ class GithubService(BaseService):
                 "type": options.get("type", self.need_type),
                 "layout": options.get("layout", self.layout),
                 "id": self.id_prefix + item["sha"][:6],
-                "title": item["commit"]["message"].split("\n")[0][:60],  # 1. line, max length 60 chars
+                "title": item["commit"]["message"].split("\n")[0][
+                    :60
+                ],  # 1. line, max length 60 chars
                 "content": item["commit"]["message"],
                 "user": item["author"]["login"],
                 "url": item["html_url"],
@@ -276,7 +310,9 @@ class GithubService(BaseService):
         avatar_file_path = os.path.join(path, filename)
 
         # Placeholder avatar, if things go wrong or avatar download is deactivated
-        default_avatar_file_path = os.path.join(os.path.dirname(__file__), "../images/avatar.png")
+        default_avatar_file_path = os.path.join(
+            os.path.dirname(__file__), "../images/avatar.png"
+        )
         if self.download_avatars:
             # Download only, if file not downloaded yet
             if not os.path.exists(avatar_file_path):
@@ -292,20 +328,20 @@ class GithubService(BaseService):
                         f.write(response.content)
                 elif response.status_code == 302:
                     self.log.warning(
-                        "GitHub service {} could not download avatar image "
-                        "from {}.\n"
-                        "    Status code: {}\n"
+                        f"GitHub service {self.name} could not download avatar image "
+                        f"from {avatar_url}.\n"
+                        f"    Status code: {response.status_code}\n"
                         "    Reason: Looks like the authentication provider tries to redirect you."
                         " This is not supported and is a common problem, "
-                        "if you use GitHub Enterprise. [needs]".format(self.name, avatar_url, response.status_code),
+                        "if you use GitHub Enterprise. [needs]",
                         type="needs",
                     )
                     avatar_file_path = default_avatar_file_path
                 else:
                     self.log.warning(
-                        "GitHub service {} could not download avatar image "
-                        "from {}.\n"
-                        "    Status code: {} [needs]".format(self.name, avatar_url, response.status_code),
+                        f"GitHub service {self.name} could not download avatar image "
+                        f"from {avatar_url}.\n"
+                        f"    Status code: {response.status_code} [needs]",
                         type="needs",
                     )
                     avatar_file_path = default_avatar_file_path
@@ -314,7 +350,9 @@ class GithubService(BaseService):
 
         return avatar_file_path
 
-    def _add_given_options(self, options: Dict[str, Any], element_data: Dict[str, Any]) -> None:
+    def _add_given_options(
+        self, options: Dict[str, Any], element_data: Dict[str, Any]
+    ) -> None:
         """
         Add data from options, which was defined by user but is not set by this service
 
@@ -324,7 +362,7 @@ class GithubService(BaseService):
         """
         for key, value in options.items():
             # Check if given option is not already handled and is not part of the service internal options
-            if key not in element_data.keys() and key not in GITHUB_DATA:
+            if key not in element_data and key not in GITHUB_DATA:
                 element_data[key] = value
 
 

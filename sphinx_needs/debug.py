@@ -17,14 +17,18 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 from sphinx.application import Sphinx
 
 TIME_MEASUREMENTS: dict[str, Any] = {}  # Stores the timing results
-EXECUTE_TIME_MEASUREMENTS = False  # Will be used to de/activate measurements. Set during a Sphinx Event
+EXECUTE_TIME_MEASUREMENTS = (
+    False  # Will be used to de/activate measurements. Set during a Sphinx Event
+)
 
 START_TIME = 0.0
 
 T = TypeVar("T", bound=Callable[..., Any])
 
 
-def measure_time(category: str | None = None, source: str = "internal", name: str | None = None) -> Callable[[T], T]:
+def measure_time(
+    category: str | None = None, source: str = "internal", name: str | None = None
+) -> Callable[[T], T]:
     """
     Decorator for measuring the needed execution time of a specific function.
 
@@ -71,10 +75,7 @@ def measure_time(category: str | None = None, source: str = "internal", name: st
 
             runtime = end - start
 
-            if name is None:
-                mt_name = func.__name__
-            else:
-                mt_name = name
+            mt_name = func.__name__ if name is None else name
 
             mt_id = f"{category}_{func.__name__}"
 
@@ -107,9 +108,13 @@ def measure_time(category: str | None = None, source: str = "internal", name: st
                 runtime_dict["max"] = runtime
                 runtime_dict["max_params"] = {  # Store parameters as a shorten string
                     "args": str([str(arg)[:80] for arg in args]),
-                    "kwargs": str({key: str(value)[:80] for key, value in kwargs.items()}),
+                    "kwargs": str(
+                        {key: str(value)[:80] for key, value in kwargs.items()}
+                    ),
                 }
-            runtime_dict["min_max_spread"] = runtime_dict["max"] / runtime_dict["min"] * 100
+            runtime_dict["min_max_spread"] = (
+                runtime_dict["max"] / runtime_dict["min"] * 100
+            )
             runtime_dict["avg"] = runtime_dict["overall"] / runtime_dict["amount"]
             return result
 
@@ -118,7 +123,12 @@ def measure_time(category: str | None = None, source: str = "internal", name: st
     return inner
 
 
-def measure_time_func(func: T, category: str | None = None, source: str = "internal", name: str | None = None) -> T:
+def measure_time_func(
+    func: T,
+    category: str | None = None,
+    source: str = "internal",
+    name: str | None = None,
+) -> T:
     """Wrapper for measuring the needed execution time of a specific function.
 
     Usage as function::
@@ -153,7 +163,9 @@ def store_timing_results_json(outdir: str, build_data: dict[str, Any]) -> None:
 
 
 def store_timing_results_html(outdir: str, build_data: dict[str, Any]) -> None:
-    jinja_env = Environment(loader=PackageLoader("sphinx_needs"), autoescape=select_autoescape())
+    jinja_env = Environment(
+        loader=PackageLoader("sphinx_needs"), autoescape=select_autoescape()
+    )
     template = jinja_env.get_template("time_measurements.html")
     out_file = Path(outdir) / "debug_measurement.html"
     with open(out_file, "w", encoding="utf-8") as f:

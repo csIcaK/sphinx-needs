@@ -29,7 +29,9 @@ def random_data_callback(request):
     if re.match(r"/search/issues", request.path_url):
         data = GITHUB_ISSUE_SEARCH_ANSWER
         data["items"][0]["number"] = randrange(10000)
-    elif re.match(r"/.+/issue/.+", request.path_url) or re.match(r"/.+/pulls/.+", request.path_url):
+    elif re.match(r"/.+/issue/.+", request.path_url) or re.match(
+        r"/.+/pulls/.+", request.path_url
+    ):
         data = GITHUB_SPECIFIC_ISSUE_ANSWER
         data["number"] = randrange(10000)
     elif re.match(r"/search/commits", request.path_url):
@@ -47,7 +49,9 @@ def random_data_callback(request):
 
 
 @responses.activate
-@pytest.mark.parametrize("test_app", [{"buildername": "html", "srcdir": "doc_test/doc_basic"}], indirect=True)
+@pytest.mark.parametrize(
+    "test_app", [{"buildername": "html", "srcdir": "doc_test/doc_basic"}], indirect=True
+)
 def test_build_html(test_app):
     responses.add_callback(
         responses.GET,
@@ -55,7 +59,9 @@ def test_build_html(test_app):
         callback=random_data_callback,
         content_type="application/json",
     )
-    responses.add(responses.GET, re.compile(r"https://avatars.githubusercontent.com/.*"), body="")
+    responses.add(
+        responses.GET, re.compile(r"https://avatars.githubusercontent.com/.*"), body=""
+    )
 
     app = test_app
     app.builder.build_all()
@@ -69,7 +75,11 @@ def test_build_html(test_app):
 
 
 @responses.activate
-@pytest.mark.parametrize("test_app", [{"buildername": "html", "srcdir": "doc_test/generic_doc"}], indirect=True)
+@pytest.mark.parametrize(
+    "test_app",
+    [{"buildername": "html", "srcdir": "doc_test/generic_doc"}],
+    indirect=True,
+)
 def test_build_html_parallel(test_app: Sphinx, snapshot_doctree):
     responses.add_callback(
         responses.GET,
@@ -77,7 +87,9 @@ def test_build_html_parallel(test_app: Sphinx, snapshot_doctree):
         callback=random_data_callback,
         content_type="application/json",
     )
-    responses.add(responses.GET, re.compile(r"https://avatars.githubusercontent.com/.*"), body="")
+    responses.add(
+        responses.GET, re.compile(r"https://avatars.githubusercontent.com/.*"), body=""
+    )
 
     app = test_app
     app.builder.build_all()
@@ -92,8 +104,14 @@ def test_build_html_parallel(test_app: Sphinx, snapshot_doctree):
     assert app.env.get_doctree("index") == snapshot_doctree
 
 
-@pytest.mark.skipif(sys.platform == "win32", reason="assert fails on windows, need to fix later.")
-@pytest.mark.parametrize("test_app", [{"buildername": "html", "srcdir": "doc_test/generic_doc"}], indirect=True)
+@pytest.mark.skipif(
+    sys.platform == "win32", reason="assert fails on windows, need to fix later."
+)
+@pytest.mark.parametrize(
+    "test_app",
+    [{"buildername": "html", "srcdir": "doc_test/generic_doc"}],
+    indirect=True,
+)
 def test_html_head_files(test_app):
     app = test_app
     app.builder.build_all()
@@ -118,7 +136,11 @@ def test_html_head_files(test_app):
 
 
 @responses.activate
-@pytest.mark.parametrize("test_app", [{"buildername": "singlehtml", "srcdir": "doc_test/doc_basic"}], indirect=True)
+@pytest.mark.parametrize(
+    "test_app",
+    [{"buildername": "singlehtml", "srcdir": "doc_test/doc_basic"}],
+    indirect=True,
+)
 def test_build_singlehtml(test_app):
     responses.add_callback(
         responses.GET,
@@ -126,14 +148,20 @@ def test_build_singlehtml(test_app):
         callback=random_data_callback,
         content_type="application/json",
     )
-    responses.add(responses.GET, re.compile(r"https://avatars.githubusercontent.com/.*"), body="")
+    responses.add(
+        responses.GET, re.compile(r"https://avatars.githubusercontent.com/.*"), body=""
+    )
 
     app = test_app
     app.builder.build_all()
 
 
 @responses.activate
-@pytest.mark.parametrize("test_app", [{"buildername": "latex", "srcdir": "doc_test/doc_basic"}], indirect=True)
+@pytest.mark.parametrize(
+    "test_app",
+    [{"buildername": "latex", "srcdir": "doc_test/doc_basic"}],
+    indirect=True,
+)
 def test_build_latex(test_app):
     responses.add_callback(
         responses.GET,
@@ -141,14 +169,18 @@ def test_build_latex(test_app):
         callback=random_data_callback,
         content_type="application/json",
     )
-    responses.add(responses.GET, re.compile(r"https://avatars.githubusercontent.com/.*"), body="")
+    responses.add(
+        responses.GET, re.compile(r"https://avatars.githubusercontent.com/.*"), body=""
+    )
 
     app = test_app
     app.builder.build_all()
 
 
 @responses.activate
-@pytest.mark.parametrize("test_app", [{"buildername": "epub", "srcdir": "doc_test/doc_basic"}], indirect=True)
+@pytest.mark.parametrize(
+    "test_app", [{"buildername": "epub", "srcdir": "doc_test/doc_basic"}], indirect=True
+)
 def test_build_epub(test_app):
     responses.add_callback(
         responses.GET,
@@ -156,14 +188,18 @@ def test_build_epub(test_app):
         callback=random_data_callback,
         content_type="application/json",
     )
-    responses.add(responses.GET, re.compile(r"https://avatars.githubusercontent.com/.*"), body="")
+    responses.add(
+        responses.GET, re.compile(r"https://avatars.githubusercontent.com/.*"), body=""
+    )
 
     app = test_app
     app.builder.build_all()
 
 
 @responses.activate
-@pytest.mark.parametrize("test_app", [{"buildername": "json", "srcdir": "doc_test/doc_basic"}], indirect=True)
+@pytest.mark.parametrize(
+    "test_app", [{"buildername": "json", "srcdir": "doc_test/doc_basic"}], indirect=True
+)
 def test_build_json(test_app):
     responses.add_callback(
         responses.GET,
@@ -171,14 +207,20 @@ def test_build_json(test_app):
         callback=random_data_callback,
         content_type="application/json",
     )
-    responses.add(responses.GET, re.compile(r"https://avatars.githubusercontent.com/.*"), body="")
+    responses.add(
+        responses.GET, re.compile(r"https://avatars.githubusercontent.com/.*"), body=""
+    )
 
     app = test_app
     app.builder.build_all()
 
 
 @responses.activate
-@pytest.mark.parametrize("test_app", [{"buildername": "needs", "srcdir": "doc_test/doc_basic"}], indirect=True)
+@pytest.mark.parametrize(
+    "test_app",
+    [{"buildername": "needs", "srcdir": "doc_test/doc_basic"}],
+    indirect=True,
+)
 def test_build_needs(test_app, snapshot):
     responses.add_callback(
         responses.GET,
@@ -186,7 +228,9 @@ def test_build_needs(test_app, snapshot):
         callback=random_data_callback,
         content_type="application/json",
     )
-    responses.add(responses.GET, re.compile(r"https://avatars.githubusercontent.com/.*"), body="")
+    responses.add(
+        responses.GET, re.compile(r"https://avatars.githubusercontent.com/.*"), body=""
+    )
 
     app = test_app
     app.builder.build_all()
@@ -200,7 +244,13 @@ def test_build_needs(test_app, snapshot):
 @responses.activate
 @pytest.mark.parametrize(
     "test_app",
-    [{"buildername": "html", "srcdir": "doc_test/doc_basic", "confoverrides": {"needs_id_required": True}}],
+    [
+        {
+            "buildername": "html",
+            "srcdir": "doc_test/doc_basic",
+            "confoverrides": {"needs_id_required": True},
+        }
+    ],
     indirect=True,
 )
 def test_id_required_build_html(test_app):
@@ -211,7 +261,11 @@ def test_id_required_build_html(test_app):
             callback=random_data_callback,
             content_type="application/json",
         )
-        responses.add(responses.GET, re.compile(r"https://avatars.githubusercontent.com/.*"), body="")
+        responses.add(
+            responses.GET,
+            re.compile(r"https://avatars.githubusercontent.com/.*"),
+            body="",
+        )
 
         app = test_app
         app.builder.build_all()
@@ -229,7 +283,9 @@ def test_sphinx_api_build():
         callback=random_data_callback,
         content_type="application/json",
     )
-    responses.add(responses.GET, re.compile(r"https://avatars.githubusercontent.com/.*"), body="")
+    responses.add(
+        responses.GET, re.compile(r"https://avatars.githubusercontent.com/.*"), body=""
+    )
 
     temp_dir = tempfile.mkdtemp()
     src_dir = os.path.join(os.path.dirname(__file__), "doc_test", "doc_basic")

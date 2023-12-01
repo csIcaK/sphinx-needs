@@ -4,7 +4,9 @@ import pytest
 
 
 @pytest.mark.parametrize(
-    "test_app", [{"buildername": "html", "srcdir": "doc_test/doc_report_dead_links_true"}], indirect=True
+    "test_app",
+    [{"buildername": "html", "srcdir": "doc_test/doc_report_dead_links_true"}],
+    indirect=True,
 )
 def test_needs_report_dead_links_true(test_app):
     import subprocess
@@ -16,7 +18,9 @@ def test_needs_report_dead_links_true(test_app):
 
     src_dir = Path(app.srcdir)
     out_dir = Path(app.outdir)
-    output = subprocess.run(["sphinx-build", "-M", "html", src_dir, out_dir], capture_output=True)
+    output = subprocess.run(
+        ["sphinx-build", "-M", "html", src_dir, out_dir], capture_output=True
+    )
 
     # Check log info msg of dead links
     assert (
@@ -35,7 +39,9 @@ def test_needs_report_dead_links_true(test_app):
 
 
 @pytest.mark.parametrize(
-    "test_app", [{"buildername": "html", "srcdir": "doc_test/doc_report_dead_links_false"}], indirect=True
+    "test_app",
+    [{"buildername": "html", "srcdir": "doc_test/doc_report_dead_links_false"}],
+    indirect=True,
 )
 def test_needs_report_dead_links_false(test_app):
     import subprocess
@@ -47,7 +53,9 @@ def test_needs_report_dead_links_false(test_app):
 
     src_dir = Path(app.srcdir)
     out_dir = Path(app.outdir)
-    output = subprocess.run(["sphinx-build", "-M", "html", src_dir, out_dir], capture_output=True)
+    output = subprocess.run(
+        ["sphinx-build", "-M", "html", src_dir, out_dir], capture_output=True
+    )
 
     # Check log info msg of dead links deactivated
     assert (

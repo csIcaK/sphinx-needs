@@ -46,7 +46,17 @@ class NeedserviceDirective(SphinxDirective):
         state: RSTState,
         state_machine: RSTStateMachine,
     ):
-        super().__init__(name, arguments, options, content, lineno, content_offset, block_text, state, state_machine)
+        super().__init__(
+            name,
+            arguments,
+            options,
+            content,
+            lineno,
+            content_offset,
+            block_text,
+            state,
+            state_machine,
+        )
         self.log = get_logger(__name__)
 
     def run(self) -> Sequence[nodes.Node]:
@@ -74,14 +84,14 @@ class NeedserviceDirective(SphinxDirective):
 
                 content.extend(self.content)
 
-                if "type" not in datum.keys():
+                if "type" not in datum:
                     # Use the first defined type, if nothing got defined by service (should not be the case)
                     need_type = need_types[0]["directive"]
                 else:
                     need_type = datum["type"]
                     del datum["type"]
 
-                if "title" not in datum.keys():
+                if "title" not in datum:
                     need_title = ""
                 else:
                     need_title = datum["title"]
@@ -90,10 +100,14 @@ class NeedserviceDirective(SphinxDirective):
                 # We need to check if all given options from services are really available as configured
                 # extra_option or extra_link
                 missing_options = {}
-                for element in datum.keys():
+                for element in datum:
                     defined_options = list(self.__class__.option_spec.keys())
-                    defined_options.append("content")  # Add content, so that it gets not detected as missing
-                    if element not in defined_options and element not in getattr(app.config, "needs_extra_links", []):
+                    defined_options.append(
+                        "content"
+                    )  # Add content, so that it gets not detected as missing
+                    if element not in defined_options and element not in getattr(
+                        app.config, "needs_extra_links", []
+                    ):
                         missing_options[element] = datum[element]
 
                 # Finally delete not found options
@@ -110,13 +124,25 @@ class NeedserviceDirective(SphinxDirective):
                 datum.update(options)
 
                 # ToDo: Tags and Status are not set (but exist in data)
-                section += add_need(self.env.app, self.state, docname, self.lineno, need_type, need_title, **datum)
+                section += add_need(
+                    self.env.app,
+                    self.state,
+                    docname,
+                    self.lineno,
+                    need_type,
+                    need_title,
+                    **datum,
+                )
         else:
             try:
                 service_debug_data = service.debug(self.options)
             except NotImplementedError:
-                service_debug_data = {"error": f'Service {service_name} does not support "debug" output.'}
-            viewer_node = get_data_viewer_node(title="Debug data", data=service_debug_data)
+                service_debug_data = {
+                    "error": f'Service {service_name} does not support "debug" output.'
+                }
+            viewer_node = get_data_viewer_node(
+                title="Debug data", data=service_debug_data
+            )
             section.append(viewer_node)
 
         add_doc(self.env, self.env.docname)

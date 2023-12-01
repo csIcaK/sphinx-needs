@@ -32,7 +32,10 @@ class NeedReportDirective(SphinxDirective):
         if len(self.options.keys()) == 0:  # Check if options is empty
             error_file, error_line = self.state_machine.input_lines.items[0]
             error_msg = "{}:{}: NeedReportError: No options specified to generate need report.".format(
-                error_file, error_line + self.state_machine.input_lines.data.index(".. needreport::") + 1
+                error_file,
+                error_line
+                + self.state_machine.input_lines.data.index(".. needreport::")
+                + 1,
             )
             raise NeedsReportException(error_msg)
 
@@ -65,14 +68,20 @@ class NeedReportDirective(SphinxDirective):
 
         need_report_template_path: str = needs_config.report_template
         # Absolute path starts with /, based on the conf.py directory. The / need to be striped
-        correct_need_report_template_path = os.path.join(env.app.srcdir, need_report_template_path.lstrip("/"))
+        correct_need_report_template_path = os.path.join(
+            env.app.srcdir, need_report_template_path.lstrip("/")
+        )
 
         if len(need_report_template_path) == 0:
             default_template_path = "needreport_template.rst"
-            correct_need_report_template_path = os.path.join(os.path.dirname(__file__), default_template_path)
+            correct_need_report_template_path = os.path.join(
+                os.path.dirname(__file__), default_template_path
+            )
 
         if not os.path.exists(correct_need_report_template_path):
-            raise ReferenceError(f"Could not load needs report template file {correct_need_report_template_path}")
+            raise ReferenceError(
+                f"Could not load needs report template file {correct_need_report_template_path}"
+            )
 
         with open(correct_need_report_template_path) as needs_report_template_file:
             needs_report_template_file_content = needs_report_template_file.read()
@@ -80,7 +89,9 @@ class NeedReportDirective(SphinxDirective):
         template = Template(needs_report_template_file_content, autoescape=True)
 
         text = template.render(**report_info)
-        self.state_machine.insert_input(text.split("\n"), self.state_machine.document.attributes["source"])
+        self.state_machine.insert_input(
+            text.split("\n"), self.state_machine.document.attributes["source"]
+        )
 
         report_node = nodes.raw()
 

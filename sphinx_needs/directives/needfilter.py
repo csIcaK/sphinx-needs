@@ -46,7 +46,9 @@ class NeedfilterDirective(FilterBase):
     def run(self) -> Sequence[nodes.Node]:
         env = self.env
 
-        targetid = "needfilter-{docname}-{id}".format(docname=env.docname, id=env.new_serialno("needfilter"))
+        targetid = "needfilter-{docname}-{id}".format(
+            docname=env.docname, id=env.new_serialno("needfilter")
+        )
         targetnode = nodes.target("", "", ids=[targetid])
 
         # Add the need and all needed information
@@ -69,7 +71,10 @@ class NeedfilterDirective(FilterBase):
 
 
 def process_needfilters(
-    app: Sphinx, doctree: nodes.document, fromdocname: str, found_nodes: List[nodes.Element]
+    app: Sphinx,
+    doctree: nodes.document,
+    fromdocname: str,
+    found_nodes: List[nodes.Element],
 ) -> None:
     # Replace all needlist nodes with a list of the collected needs.
     # Augment each need with a backlink to the original location.
@@ -126,7 +131,14 @@ def process_needfilters(
             status_colspec = nodes.colspec(colwidth=5)
             links_colspec = nodes.colspec(colwidth=5)
             tags_colspec = nodes.colspec(colwidth=5)
-            tgroup += [id_colspec, title_colspec, type_colspec, status_colspec, links_colspec, tags_colspec]
+            tgroup += [
+                id_colspec,
+                title_colspec,
+                type_colspec,
+                status_colspec,
+                links_colspec,
+                tags_colspec,
+            ]
             tgroup += nodes.thead(
                 "",
                 nodes.row(
@@ -167,7 +179,9 @@ def process_needfilters(
                 else:
                     ref = nodes.reference("", "")
                     ref["refdocname"] = need_info["docname"]
-                    ref["refuri"] = builder.get_relative_uri(fromdocname, need_info["docname"])
+                    ref["refuri"] = builder.get_relative_uri(
+                        fromdocname, need_info["docname"]
+                    )
                     ref["refuri"] += "#" + target_id
                     ref.append(title)
                     para += ref
@@ -175,11 +189,17 @@ def process_needfilters(
                 line_block.append(para)
             elif current_needfilter["layout"] == "table":
                 row = nodes.row()
-                row += row_col_maker(app, fromdocname, all_needs, need_info, "id", make_ref=True)
+                row += row_col_maker(
+                    app, fromdocname, all_needs, need_info, "id", make_ref=True
+                )
                 row += row_col_maker(app, fromdocname, all_needs, need_info, "title")
-                row += row_col_maker(app, fromdocname, all_needs, need_info, "type_name")
+                row += row_col_maker(
+                    app, fromdocname, all_needs, need_info, "type_name"
+                )
                 row += row_col_maker(app, fromdocname, all_needs, need_info, "status")
-                row += row_col_maker(app, fromdocname, all_needs, need_info, "links", ref_lookup=True)
+                row += row_col_maker(
+                    app, fromdocname, all_needs, need_info, "links", ref_lookup=True
+                )
                 row += row_col_maker(app, fromdocname, all_needs, need_info, "tags")
                 tbody += row
             elif current_needfilter["layout"] == "diagram":
@@ -200,9 +220,13 @@ def process_needfilters(
                     link = ""
 
                 diagram_template = Template(needs_config.diagram_template)
-                node_text = diagram_template.render(**need_info, **needs_config.render_context)
+                node_text = diagram_template.render(
+                    **need_info, **needs_config.render_context
+                )
 
-                puml_node["uml"] += '{style} "{node_text}" as {id} [[{link}]] {color}\n'.format(
+                puml_node[
+                    "uml"
+                ] += '{style} "{node_text}" as {id} [[{link}]] {color}\n'.format(
                     id=need_info["id"],
                     node_text=node_text,
                     link=link,
@@ -210,7 +234,9 @@ def process_needfilters(
                     style=need_info["type_style"],
                 )
                 for link in need_info["links"]:
-                    puml_connections += "{id} --> {link}\n".format(id=need_info["id"], link=link)
+                    puml_connections += "{id} --> {link}\n".format(
+                        id=need_info["id"], link=link
+                    )
 
         if current_needfilter["layout"] == "list":
             content.append(line_block)
@@ -224,7 +250,9 @@ def process_needfilters(
                 puml_node["uml"] += create_legend(needs_config.types)
             puml_node["uml"] += "@enduml"
             puml_node["incdir"] = os.path.dirname(current_needfilter["docname"])
-            puml_node["filename"] = os.path.split(current_needfilter["docname"])[1]  # Needed for plantuml >= 0.9
+            puml_node["filename"] = os.path.split(current_needfilter["docname"])[
+                1
+            ]  # Needed for plantuml >= 0.9
             content.append(puml_node)
 
         if len(content) == 0:
@@ -241,17 +269,25 @@ def process_needfilters(
                 if len(current_needfilter["status"]) > 0
                 else ""
             )
-            if len(current_needfilter["status"]) > 0 and len(current_needfilter["tags"]) > 0:
+            if (
+                len(current_needfilter["status"]) > 0
+                and len(current_needfilter["tags"]) > 0
+            ):
                 filter_text += " AND "
             filter_text += (
-                " tags(%s)" % " OR ".join(current_needfilter["tags"]) if len(current_needfilter["tags"]) > 0 else ""
+                " tags(%s)" % " OR ".join(current_needfilter["tags"])
+                if len(current_needfilter["tags"]) > 0
+                else ""
             )
-            if (len(current_needfilter["status"]) > 0 or len(current_needfilter["tags"]) > 0) and len(
-                current_needfilter["types"]
-            ) > 0:
+            if (
+                len(current_needfilter["status"]) > 0
+                or len(current_needfilter["tags"]) > 0
+            ) and len(current_needfilter["types"]) > 0:
                 filter_text += " AND "
             filter_text += (
-                " types(%s)" % " OR ".join(current_needfilter["types"]) if len(current_needfilter["types"]) > 0 else ""
+                " types(%s)" % " OR ".join(current_needfilter["types"])
+                if len(current_needfilter["types"]) > 0
+                else ""
             )
 
             filter_node = nodes.emphasis(filter_text, filter_text)

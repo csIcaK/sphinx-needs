@@ -18,7 +18,10 @@ class NeedOutgoing(nodes.Inline, nodes.Element):  # type: ignore
 
 
 def process_need_outgoing(
-    app: Sphinx, doctree: nodes.document, fromdocname: str, found_nodes: List[nodes.Element]
+    app: Sphinx,
+    doctree: nodes.document,
+    fromdocname: str,
+    found_nodes: List[nodes.Element],
 ) -> None:
     builder = app.builder
     env = app.env
@@ -51,13 +54,19 @@ def process_need_outgoing(
 
             # If the need target exists, let's create the reference
             if (link in needs_all_needs and not link_part) or (
-                link_part and link in needs_all_needs and link_part in needs_all_needs[link]["parts"]
+                link_part
+                and link in needs_all_needs
+                and link_part in needs_all_needs[link]["parts"]
             ):
                 try:
                     target_need = needs_all_needs[link]
                     if link_part and link_part in target_need["parts"]:
                         part_content = target_need["parts"][link_part]["content"]
-                        target_title = part_content if len(part_content) < 30 else part_content[:27] + "..."
+                        target_title = (
+                            part_content
+                            if len(part_content) < 30
+                            else part_content[:27] + "..."
+                        )
                         target_id = ".".join([link, link_part])
                     else:
                         target_title = target_need["title"]
@@ -86,8 +95,12 @@ def process_need_outgoing(
                             node_need_ref["reftarget"],
                         )
                     else:
-                        assert target_need["external_url"] is not None, "External URL must be set"
-                        new_node_ref = nodes.reference(target_need["id"], target_need["id"])
+                        assert (
+                            target_need["external_url"] is not None
+                        ), "External URL must be set"
+                        new_node_ref = nodes.reference(
+                            target_need["id"], target_need["id"]
+                        )
                         new_node_ref["refuri"] = check_and_calc_base_url_rel_path(
                             target_need["external_url"], fromdocname
                         )
@@ -139,7 +152,10 @@ def process_need_outgoing(
                             log_level,
                             "outgoing linked need {} not found (document: {}, "
                             "source need {} on line {} ) [needs]".format(
-                                link, ref_need["docname"], ref_need["id"], ref_need["lineno"]
+                                link,
+                                ref_need["docname"],
+                                ref_need["id"],
+                                ref_need["lineno"],
                             ),
                             **kwargs,
                         )

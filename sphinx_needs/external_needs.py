@@ -45,18 +45,28 @@ def load_external_needs(app: Sphinx, env: BuildEnvironment, _docname: str) -> No
                 )
             )
         elif not (source.get("json_url", False) or source.get("json_path", False)):
-            raise NeedsExternalException("json_path or json_url must be configured to use external_needs.")
+            raise NeedsExternalException(
+                "json_path or json_url must be configured to use external_needs."
+            )
 
         if source.get("json_url", False):
-            log.info(clean_log(f"Loading external needs from url {source['json_url']}."))
+            log.info(
+                clean_log(f"Loading external needs from url {source['json_url']}.")
+            )
             s = requests.Session()
             s.mount("file://", FileAdapter())
             try:
                 response = s.get(source["json_url"])
-                needs_json = response.json()  # The downloaded file MUST be json. Everything else we do not handle!
+                needs_json = (
+                    response.json()
+                )  # The downloaded file MUST be json. Everything else we do not handle!
             except Exception as e:
                 raise NeedsExternalException(
-                    clean_log("Getting {} didn't work. Reason: {}".format(source["json_url"], e))
+                    clean_log(
+                        "Getting {} didn't work. Reason: {}".format(
+                            source["json_url"], e
+                        )
+                    )
                 )
 
         if source.get("json_path", False):
@@ -66,7 +76,9 @@ def load_external_needs(app: Sphinx, env: BuildEnvironment, _docname: str) -> No
                 json_path = os.path.join(app.srcdir, source["json_path"])
 
             if not os.path.exists(json_path):
-                raise NeedsExternalException(f"Given json_path {json_path} does not exist.")
+                raise NeedsExternalException(
+                    f"Given json_path {json_path} does not exist."
+                )
 
             with open(json_path) as json_file:
                 needs_json = json.load(json_file)
@@ -81,7 +93,9 @@ def load_external_needs(app: Sphinx, env: BuildEnvironment, _docname: str) -> No
             needs = needs_json["versions"][version]["needs"]
         except KeyError:
             raise NeedsExternalException(
-                clean_log(f"Version {version} not found in json file from {source['json_url']}")
+                clean_log(
+                    f"Version {version} not found in json file from {source['json_url']}"
+                )
             )
 
         log.debug(f"Loading {len(needs)} needs.")
@@ -96,7 +110,16 @@ def load_external_needs(app: Sphinx, env: BuildEnvironment, _docname: str) -> No
                 if (
                     key not in needs_config.extra_options
                     and key not in extra_links
-                    and key not in ["title", "type", "id", "description", "tags", "docname", "status"]
+                    and key
+                    not in [
+                        "title",
+                        "type",
+                        "id",
+                        "description",
+                        "tags",
+                        "docname",
+                        "status",
+                    ]
                 ):
                     del need_params[key]
 

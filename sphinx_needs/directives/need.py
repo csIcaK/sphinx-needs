@@ -63,7 +63,17 @@ class NeedDirective(SphinxDirective):
         state: RSTState,
         state_machine: RSTStateMachine,
     ):
-        super().__init__(name, arguments, options, content, lineno, content_offset, block_text, state, state_machine)
+        super().__init__(
+            name,
+            arguments,
+            options,
+            content,
+            lineno,
+            content_offset,
+            block_text,
+            state,
+            state_machine,
+        )
         self.needs_config = NeedsSphinxConfig(self.env.config)
         self.log = get_logger(__name__)
         self.full_title = self._get_full_title()
@@ -108,7 +118,9 @@ class NeedDirective(SphinxDirective):
         content = "\n".join(self.content)
         status = self.options.get("status")
         if status:
-            status = status.replace("__", "")  # Support for multiline options, which must use __ for empty lines
+            status = status.replace(
+                "__", ""
+            )  # Support for multiline options, which must use __ for empty lines
         tags = self.options.get("tags", "")
         style = self.options.get("style")
         layout = self.options.get("layout", "")
@@ -120,7 +132,9 @@ class NeedDirective(SphinxDirective):
 
         need_extra_options = {"duration": duration, "completion": completion}
         for extra_link in self.needs_config.extra_links:
-            need_extra_options[extra_link["option"]] = self.options.get(extra_link["option"], "")
+            need_extra_options[extra_link["option"]] = self.options.get(
+                extra_link["option"], ""
+            )
 
         for extra_option in NEEDS_CONFIG.extra_options:
             need_extra_options[extra_option] = self.options.get(extra_option, "")
@@ -174,12 +188,17 @@ class NeedDirective(SphinxDirective):
     def make_hashed_id(self, type_prefix: str, id_length: int) -> str:
         hashable_content = self.full_title or "\n".join(self.content)
         return "{}{}".format(
-            type_prefix, hashlib.sha1(hashable_content.encode("UTF-8")).hexdigest().upper()[:id_length]
+            type_prefix,
+            hashlib.sha1(hashable_content.encode("UTF-8"))
+            .hexdigest()
+            .upper()[:id_length],
         )
 
     @property
     def title_from_content(self) -> bool:
-        return "title_from_content" in self.options or self.needs_config.title_from_content
+        return (
+            "title_from_content" in self.options or self.needs_config.title_from_content
+        )
 
     @property
     def docname(self) -> str:
@@ -210,8 +229,8 @@ class NeedDirective(SphinxDirective):
         if len(self.arguments) > 0:  # a title was passed
             if "title_from_content" in self.options:
                 self.log.warning(
-                    'need "{}" has :title_from_content: set, '
-                    "but a title was provided. (see file {}) [needs]".format(self.arguments[0], self.docname),
+                    f'need "{self.arguments[0]}" has :title_from_content: set, '
+                    f"but a title was provided. (see file {self.docname}) [needs]",
                     type="needs",
                     location=(self.env.docname, self.lineno),
                 )
@@ -222,7 +241,7 @@ class NeedDirective(SphinxDirective):
                 raise NeedsInvalidException(
                     ":title_from_content: set, but "
                     "no content provided. "
-                    "(Line {} of file {}".format(self.lineno, self.docname)
+                    f"(Line {self.lineno} of file {self.docname}"
                 )
             return first_sentence
         else:
@@ -259,7 +278,9 @@ def get_sections_and_signature_and_needs(
                 if isinstance(sibling, desc_signature):
                     # Check the child of the found signature for the text content/node.
                     for desc_child in sibling.children:
-                        if isinstance(desc_child, desc_name) and isinstance(desc_child.children[0], nodes.Text):
+                        if isinstance(desc_child, desc_name) and isinstance(
+                            desc_child.children[0], nodes.Text
+                        ):
                             signature = desc_child.children[0]
                 if signature:
                     break
@@ -323,7 +344,9 @@ def analyse_need_locations(app: Sphinx, doctree: nodes.document) -> None:
 
         # Fetch values from need
         # Start from the target node, which is a sibling of the current need node
-        sections, signature, parent_needs = get_sections_and_signature_and_needs(previous_sibling(need_node))
+        sections, signature, parent_needs = get_sections_and_signature_and_needs(
+            previous_sibling(need_node)
+        )
 
         # append / set values from need
         if sections:
@@ -409,7 +432,12 @@ def process_need_nodes(app: Sphinx, doctree: nodes.document, fromdocname: str) -
 
 
 @profile("NEED_FORMAT")
-def format_need_nodes(app: Sphinx, doctree: nodes.document, fromdocname: str, found_needs_nodes: List[Need]) -> None:
+def format_need_nodes(
+    app: Sphinx,
+    doctree: nodes.document,
+    fromdocname: str,
+    found_needs_nodes: List[Need],
+) -> None:
     """Replace need nodes in the document with node trees suitable for output"""
     env = app.env
     needs = SphinxNeedsData(env).get_or_create_needs()
@@ -422,7 +450,9 @@ def format_need_nodes(app: Sphinx, doctree: nodes.document, fromdocname: str, fo
 
         find_and_replace_node_content(node_need, env, need_data)
         for index, attribute in enumerate(node_need.attributes["classes"]):
-            node_need.attributes["classes"][index] = check_and_get_content(attribute, need_data, env)
+            node_need.attributes["classes"][index] = check_and_get_content(
+                attribute, need_data, env
+            )
 
         layout = need_data["layout"] or NeedsSphinxConfig(app.config).default_layout
 
@@ -441,7 +471,9 @@ def check_links(needs: Dict[str, NeedsInfoType], config: NeedsSphinxConfig) -> N
         for link_type in extra_links:
             dead_links_allowed = link_type.get("allow_dead_links", False)
             need_link_value = (
-                [need[link_type["option"]]] if isinstance(need[link_type["option"]], str) else need[link_type["option"]]  # type: ignore
+                [need[link_type["option"]]]  # type: ignore[literal-required]
+                if isinstance(need[link_type["option"]], str)  # type: ignore[literal-required]
+                else need[link_type["option"]]  # type: ignore[literal-required]
             )
             for link in need_link_value:
                 if "." in link:
@@ -450,7 +482,9 @@ def check_links(needs: Dict[str, NeedsInfoType], config: NeedsSphinxConfig) -> N
                     need_id = link
                     need_part_id = None
                 if need_id not in needs or (
-                    need_id in needs and need_part_id and need_part_id not in needs[need_id]["parts"]
+                    need_id in needs
+                    and need_part_id
+                    and need_part_id not in needs[need_id]["parts"]
                 ):
                     need["has_dead_links"] = True
                     if not dead_links_allowed:
@@ -458,7 +492,9 @@ def check_links(needs: Dict[str, NeedsInfoType], config: NeedsSphinxConfig) -> N
                     break  # One found dead link is enough
 
 
-def create_back_links(needs: Dict[str, NeedsInfoType], config: NeedsSphinxConfig) -> None:
+def create_back_links(
+    needs: Dict[str, NeedsInfoType], config: NeedsSphinxConfig
+) -> None:
     """Create back-links in all found needs.
 
     These are fields for each link type, ``<link_name>_back``,
@@ -469,7 +505,9 @@ def create_back_links(needs: Dict[str, NeedsInfoType], config: NeedsSphinxConfig
         option_back = f"{option}_back"
 
         for key, need in needs.items():
-            need_link_value = [need[option]] if isinstance(need[option], str) else need[option]  # type: ignore[literal-required]
+            need_link_value = (
+                [need[option]] if isinstance(need[option], str) else need[option]  # type: ignore[literal-required]
+            )
             for link in need_link_value:
                 link_main = link.split(".")[0]
                 try:
@@ -483,7 +521,7 @@ def create_back_links(needs: Dict[str, NeedsInfoType], config: NeedsSphinxConfig
 
                     # Handling of links to need_parts inside a need
                     if link_part and link_part in needs[link_main]["parts"]:
-                        if option_back not in needs[link_main]["parts"][link_part].keys():
+                        if option_back not in needs[link_main]["parts"][link_part]:
                             needs[link_main]["parts"][link_part][option_back] = []  # type: ignore[literal-required]
                         needs[link_main]["parts"][link_part][option_back].append(key)  # type: ignore[literal-required]
 
