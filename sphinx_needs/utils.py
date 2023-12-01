@@ -429,6 +429,7 @@ def import_matplotlib() -> Optional["mpl"]:
     """
     try:
         import matplotlib as mpl
+        import matplotlib.pyplot  # noqa: ICN001
     except ImportError:
         return None
     if not os.environ.get("DISPLAY"):
